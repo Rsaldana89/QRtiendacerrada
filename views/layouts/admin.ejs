@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || 'Panel de reportes' %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="header-admin">
+      <div class="container nav-bar">
+        <span class="logo">Panel de reportes</span>
+        <nav>
+          <span class="user">Hola, <%= user.nombre %></span>
+          <form action="/logout" method="post" class="logout-form">
+            <button type="submit" class="btn btn-logout">Cerrar sesión</button>
+          </form>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <%- body %>
+    </main>
+  </body>
+</html>

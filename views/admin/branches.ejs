@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administrar sucursales</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'sucursales' }) %>
+
+    <main class="container admin-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Catálogo</div>
+          <h1>Sucursales</h1>
+          <p>Administra las tiendas disponibles en el formulario público y sus datos opcionales de ubicación.</p>
+        </div>
+        <div class="btn-row">
+          <a href="/admin/sucursales/nueva" class="btn btn-secondary">Nueva sucursal</a>
+          <a href="/admin" class="btn btn-light">Volver</a>
+        </div>
+      </section>
+
+      <section class="panel-card qr-panel">
+        <div class="qr-copy">
+          <h2>QR general para cartel</h2>
+          <p>Este QR apunta a:</p>
+          <code><%= qrUrl %></code>
+          <p class="help-text">Puedes descargarlo e imprimirlo para colocarlo en tienda.</p>
+          <div class="btn-row">
+            <a href="/admin/sucursales/qr.png?download=1" class="btn btn-primary btn-fit">Descargar QR</a>
+            <a href="<%= qrUrl %>" target="_blank" class="btn btn-light">Abrir URL</a>
+          </div>
+        </div>
+        <div class="qr-box">
+          <img src="/admin/sucursales/qr.png" alt="Código QR de tienda cerrada" />
+        </div>
+      </section>
+
+      <section class="card-grid compact-grid">
+        <article class="metric-card">
+          <span class="label">Total sucursales</span>
+          <span class="number"><%= stats.total || 0 %></span>
+        </article>
+        <article class="metric-card">
+          <span class="label">Activas</span>
+          <span class="number"><%= stats.activas || 0 %></span>
+        </article>
+        <article class="metric-card">
+          <span class="label">Con ubicación</span>
+          <span class="number"><%= stats.con_ubicacion || 0 %></span>
+        </article>
+      </section>
+
+      <form method="get" action="/admin/sucursales" class="filter-form">
+        <div class="filters-row three-cols">
+          <div>
+            <label for="q">Buscar</label>
+            <input id="q" name="q" value="<%= filters.q || '' %>" placeholder="Nombre, municipio o usuario" />
+          </div>
+          <div>
+            <label for="activa">Estatus</label>
+            <select id="activa" name="activa">
+              <option value="">Todas</option>
+              <option value="1" <%= filters.activa === '1' ? 'selected' : '' %>>Activas</option>
+              <option value="0" <%= filters.activa === '0' ? 'selected' : '' %>>Inactivas</option>
+            </select>
+          </div>
+          <div class="filter-actions align-end">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="/admin/sucursales" class="btn btn-light">Limpiar</a>
+          </div>
+        </div>
+      </form>
+
+      <section class="table-card">
+        <div class="table-top">
+          <h2>Listado de sucursales</h2>
+          <span><%= sucursales.length %> registros</span>
+        </div>
+        <div class="table-responsive">
+          <table class="reports-table admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Sucursal</th>
+                <th>Usuario Soporte360</th>
+                <th>Municipio</th>
+                <th>Ubicación</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% sucursales.forEach(function(s) { %>
+                <tr>
+                  <td><span class="badge-id"><%= s.id %></span></td>
+                  <td>
+                    <strong><%= s.nombre %></strong>
+                    <% if (s.nombre_referencia_ubicacion && s.nombre_referencia_ubicacion !== s.nombre) { %>
+                      <small class="table-subtext">Ref: <%= s.nombre_referencia_ubicacion %></small>
+                    <% } %>
+                  </td>
+                  <td><%= s.usuario_soporte360 || '-' %></td>
+                  <td><%= s.municipio || '-' %></td>
+                  <td>
+                    <% if (s.ubicacion_activa) { %>
+                      <span class="status-badge ok">Activa</span>
+                    <% } else { %>
+                      <span class="status-badge muted">Sin GPS</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (s.activa) { %>
+                      <span class="status-badge ok">Activa</span>
+                    <% } else { %>
+                      <span class="status-badge off">Inactiva</span>
+                    <% } %>
+                  </td>
+                  <td class="actions-cell">
+                    <a href="/admin/sucursales/<%= s.id %>/editar" class="btn btn-mini btn-light">Editar</a>
+                    <form action="/admin/sucursales/<%= s.id %>/toggle" method="post" class="inline-form">
+                      <button type="submit" class="btn btn-mini btn-secondary"><%= s.activa ? 'Desactivar' : 'Activar' %></button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+              <% if (!sucursales.length) { %>
+                <tr><td colspan="7" class="no-data">No se encontraron sucursales.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

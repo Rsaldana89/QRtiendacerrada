@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuración</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'configuracion' }) %>
+
+    <main class="container admin-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Configuración</div>
+          <h1>Opciones del formulario público</h1>
+          <p>Controla qué funciones estarán visibles para los clientes al escanear el QR.</p>
+        </div>
+        <a href="/admin" class="btn btn-light">Volver al dashboard</a>
+      </section>
+
+      <% if (saved) { %>
+        <div class="alert-success">Configuración guardada correctamente.</div>
+      <% } %>
+
+      <section class="panel-card">
+        <h2>Ubicación del cliente</h2>
+        <p>
+          Si activas esta opción, el formulario público mostrará el botón
+          <strong>“Usar mi ubicación para sugerir sucursal”</strong>.
+          Si está desactivada, el cliente sólo podrá seleccionar la sucursal manualmente.
+        </p>
+
+        <form action="/admin/configuracion" method="post" class="settings-form">
+          <label class="switch-row" for="usar_ubicaciones">
+            <span>
+              <strong>Usar ubicaciones</strong>
+              <small>Mostrar botón de GPS en /reporte</small>
+            </span>
+            <input
+              type="checkbox"
+              id="usar_ubicaciones"
+              name="usar_ubicaciones"
+              value="1"
+              <%= usarUbicaciones ? 'checked' : '' %>
+            />
+          </label>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary btn-fit">Guardar configuración</button>
+            <a href="/reporte" class="btn btn-light">Ver formulario público</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

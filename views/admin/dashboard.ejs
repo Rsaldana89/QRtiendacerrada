@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de reportes</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'dashboard' }) %>
+
+    <main class="container admin-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Panel administrativo</div>
+          <h1>Resumen de reportes</h1>
+          <p>Actividad registrada desde el formulario de tiendas cerradas.</p>
+        </div>
+        <div class="btn-row">
+          <a href="/admin/reportes" class="btn btn-secondary">Ver reportes</a>
+          <a href="/admin/sucursales" class="btn btn-light">Sucursales</a>
+          <a href="/admin/usuarios" class="btn btn-light">Usuarios</a>
+          <a href="/admin/configuracion" class="btn btn-light">Configuración</a>
+        </div>
+      </section>
+
+      <section class="card-grid">
+        <article class="metric-card">
+          <span class="label">Reportes de hoy</span>
+          <span class="number"><%= counts.today %></span>
+        </article>
+        <article class="metric-card">
+          <span class="label">Reportes de la semana</span>
+          <span class="number"><%= counts.week %></span>
+        </article>
+        <article class="metric-card">
+          <span class="label">Reportes del mes</span>
+          <span class="number"><%= counts.month %></span>
+        </article>
+      </section>
+
+      <section class="panel-card">
+        <h2>Acciones rápidas</h2>
+        <p>Revisa el detalle de cada reporte, filtra por sucursal o por rango de fechas y exporta la información a CSV.</p>
+        <p class="status-note">Ubicaciones en formulario público: <strong><%= usarUbicaciones ? 'activadas' : 'desactivadas' %></strong></p>
+        <div class="btn-row">
+          <a href="/admin/reportes" class="btn btn-primary">Ver listado de reportes</a>
+          <a href="/admin/sucursales" class="btn btn-secondary">Administrar sucursales</a>
+          <a href="/admin/usuarios" class="btn btn-light">Administrar usuarios</a>
+          <a href="/admin/configuracion" class="btn btn-light">Configurar formulario</a>
+          <a href="/reporte" class="btn btn-light">Ver formulario público</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

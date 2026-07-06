@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reporte registrado</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="public-page brand-public-page">
+    <main class="public-shell">
+      <section class="public-card branded-public-card">
+        <div class="brand-header public-brand-header branded-main-header">
+          <div class="brand-logo-box">
+            <img src="/img/logo-chc.jpg" alt="Hermanos Coronel Cremería" class="logo-img" />
+          </div>
+          <div class="brand-copy brand-copy-on-dark">
+            <strong>Atención a sucursales</strong>
+            <span>Registro de avisos</span>
+          </div>
+        </div>
+        <div class="gold-rule"></div>
+        <div class="public-content branded-public-content success-centered">
+          <div class="success-box brand-success-box">✓</div>
+          <h1 class="public-title">Aviso registrado</h1>
+          <p class="public-subtitle">Gracias. El reporte fue guardado correctamente.</p>
+          <div class="form-card">
+            <a href="/reporte" class="btn btn-primary">Registrar otro reporte</a>
+          </div>
+          <footer class="public-footer-links">
+            <button type="button" class="footer-link-button" id="openAboutModal">Acerca de</button>
+            <span aria-hidden="true">·</span>
+            <a href="/privacidad">Aviso de privacidad</a>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-backdrop" id="aboutModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+        <button type="button" class="modal-close" id="closeAboutModal" aria-label="Cerrar">×</button>
+        <h2 id="aboutTitle">Acerca de</h2>
+        <p>Sistema desarrollado por Rubén Saldaña para Cremería Hermanos Coronel · 2026.</p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('aboutModal');
+        const open = document.getElementById('openAboutModal');
+        const close = document.getElementById('closeAboutModal');
+        function openModal() { modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false'); }
+        function closeModal() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); }
+        open.addEventListener('click', openModal);
+        close.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeModal(); });
+      })();
+    </script>
+  </body>
+</html>

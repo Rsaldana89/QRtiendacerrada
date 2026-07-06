@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reporte de tienda cerrada</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="public-page brand-public-page">
+    <main class="public-shell">
+      <section class="public-card branded-public-card">
+        <div class="brand-header public-brand-header branded-main-header">
+          <div class="brand-logo-box">
+            <img src="/img/logo-chc.jpg" alt="Hermanos Coronel Cremería" class="logo-img" />
+          </div>
+          <div class="brand-copy brand-copy-on-dark">
+            <strong>Atención a sucursales</strong>
+            <span>Registro de avisos</span>
+          </div>
+        </div>
+        <div class="gold-rule"></div>
+
+        <div class="public-content branded-public-content">
+          <h1 class="public-title">Reporte de tienda cerrada</h1>
+          <p class="public-subtitle">Selecciona la sucursal que encontraste cerrada.</p>
+
+          <form action="/reporte" method="post" class="form-card" id="reportForm">
+            <% if (usarUbicaciones) { %>
+              <div class="location-suggest-box brand-location-box">
+                <button type="button" id="btnDetectLocation" class="btn btn-location">
+                  Sugerir sucursal
+                </button>
+                <small>Usa tu ubicación sólo para seleccionar la sucursal más cercana. Verifica el resultado antes de enviar.</small>
+              </div>
+              <div id="locationStatus" class="location-status" aria-live="polite"></div>
+            <% } %>
+
+            <div class="form-group">
+              <label for="sucursal_id">Sucursal</label>
+              <select id="sucursal_id" name="sucursal_id" required>
+                <option value="" disabled selected>Selecciona una sucursal</option>
+                <% sucursales.forEach(function(sucursal) { %>
+                  <option
+                    value="<%= sucursal.id %>"
+                    data-lat="<%= sucursal.latitud || '' %>"
+                    data-lng="<%= sucursal.longitud || '' %>"
+                    data-geo="<%= sucursal.ubicacion_activa ? '1' : '0' %>"
+                  ><%= sucursal.nombre %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <% if (usarUbicaciones) { %>
+              <div class="privacy-consent-card brand-consent-card">
+                <label class="checkbox-row" for="consentimiento_ubicacion">
+                  <input type="checkbox" id="consentimiento_ubicacion" name="consentimiento_ubicacion" value="1" />
+                  <span>
+                    <strong>Recolectar mi ubicación para fines informativos del reporte.</strong>
+                    <small>Opcional. Si no la marcas, el reporte se enviará de todos modos.</small>
+                  </span>
+                </label>
+                <div id="consentLocationStatus" class="location-status compact" aria-live="polite"></div>
+              </div>
+              <input type="hidden" id="cliente_latitud" name="cliente_latitud" />
+              <input type="hidden" id="cliente_longitud" name="cliente_longitud" />
+              <input type="hidden" id="cliente_precision_m" name="cliente_precision_m" />
+            <% } %>
+
+            <button type="submit" class="btn btn-primary btn-main-submit">Registrar reporte</button>
+            <p class="help-text">Este reporte no solicita nombre ni teléfono.</p>
+          </form>
+
+          <footer class="public-footer-links">
+            <button type="button" class="footer-link-button" id="openAboutModal">Acerca de</button>
+            <span aria-hidden="true">·</span>
+            <a href="/privacidad">Aviso de privacidad</a>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-backdrop" id="aboutModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+        <button type="button" class="modal-close" id="closeAboutModal" aria-label="Cerrar">×</button>
+        <h2 id="aboutTitle">Acerca de</h2>
+        <p>Sistema desarrollado por Rubén Saldaña para Cremería Hermanos Coronel · 2026.</p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('aboutModal');
+        const open = document.getElementById('openAboutModal');
+        const close = document.getElementById('closeAboutModal');
+
+        function openModal() {
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeModal() {
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+        }
+
+        open.addEventListener('click', openModal);
+        close.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') closeModal();
+        });
+      })();
+    </script>
+
+    <% if (usarUbicaciones) { %>
+    <script>
+      (function () {
+        const form = document.getElementById('reportForm');
+        const button = document.getElementById('btnDetectLocation');
+        const status = document.getElementById('locationStatus');
+        const consentStatus = document.getElementById('consentLocationStatus');
+        const select = document.getElementById('sucursal_id');
+        const consent = document.getElementById('consentimiento_ubicacion');
+        const latInput = document.getElementById('cliente_latitud');
+        const lngInput = document.getElementById('cliente_longitud');
+        const accuracyInput = document.getElementById('cliente_precision_m');
+        let submittingAfterLocation = false;
+
+        function toRadians(value) {
+          return value * Math.PI / 180;
+        }
+
+        function distanceInMeters(lat1, lon1, lat2, lon2) {
+          const earthRadius = 6371000;
+          const dLat = toRadians(lat2 - lat1);
+          const dLon = toRadians(lon2 - lon1);
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return earthRadius * c;
+        }
+
+        function formatDistance(meters) {
+          if (meters < 1000) return Math.round(meters) + ' m';
+          return (meters / 1000).toFixed(2) + ' km';
+        }
+
+        function getStoresWithLocation() {
+          return Array.from(select.options)
+            .filter((option) => option.value && option.dataset.geo === '1' && option.dataset.lat && option.dataset.lng)
+            .map((option) => ({
+              option,
+              id: option.value,
+              name: option.textContent.trim(),
+              lat: Number(option.dataset.lat),
+              lng: Number(option.dataset.lng)
+            }))
+            .filter((store) => Number.isFinite(store.lat) && Number.isFinite(store.lng));
+        }
+
+        function setStatus(element, message, type) {
+          element.className = 'location-status' + (element.classList.contains('compact') ? ' compact' : '');
+          element.textContent = message || '';
+          if (type) element.classList.add(type);
+        }
+
+        function saveClientPosition(position) {
+          latInput.value = position.coords.latitude;
+          lngInput.value = position.coords.longitude;
+          accuracyInput.value = position.coords.accuracy || '';
+        }
+
+        function requestClientLocation(onSuccess, onError) {
+          if (!navigator.geolocation) {
+            onError && onError('Este navegador no permite usar ubicación.');
+            return;
+          }
+
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              saveClientPosition(position);
+              onSuccess && onSuccess(position);
+            },
+            function () {
+              onError && onError('No se pudo obtener la ubicación. Puedes desmarcar la casilla y enviar el reporte sin ubicación.');
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 12000,
+              maximumAge: 30000
+            }
+          );
+        }
+
+        button.addEventListener('click', function () {
+          const stores = getStoresWithLocation();
+          setStatus(status, '', null);
+
+          if (!stores.length) {
+            setStatus(status, 'Todavía no hay coordenadas cargadas para sugerir una sucursal. Selecciónala manualmente.', 'is-warning');
+            return;
+          }
+
+          button.disabled = true;
+          setStatus(status, 'Calculando sucursal cercana...', 'is-info');
+
+          requestClientLocation(
+            function (position) {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              const nearest = stores
+                .map((store) => ({
+                  ...store,
+                  distance: distanceInMeters(userLat, userLng, store.lat, store.lng)
+                }))
+                .sort((a, b) => a.distance - b.distance)[0];
+
+              select.value = nearest.id;
+              setStatus(status, 'Sucursal sugerida: ' + nearest.name + ' (' + formatDistance(nearest.distance) + ' aprox.). Verifica antes de enviar.', 'is-success');
+              button.disabled = false;
+            },
+            function (message) {
+              setStatus(status, message + ' Selecciona la sucursal manualmente.', 'is-warning');
+              button.disabled = false;
+            }
+          );
+        });
+
+        consent.addEventListener('change', function () {
+          if (!consent.checked) {
+            latInput.value = '';
+            lngInput.value = '';
+            accuracyInput.value = '';
+            setStatus(consentStatus, '', null);
+            return;
+          }
+
+          setStatus(consentStatus, 'Solicitando ubicación para adjuntarla al reporte...', 'is-info');
+          requestClientLocation(
+            function (position) {
+              const precision = position.coords.accuracy ? ' Precisión aprox.: ' + Math.round(position.coords.accuracy) + ' m.' : '';
+              setStatus(consentStatus, 'Ubicación capturada correctamente.' + precision, 'is-success');
+            },
+            function (message) {
+              setStatus(consentStatus, message, 'is-warning');
+            }
+          );
+        });
+
+        form.addEventListener('submit', function (event) {
+          if (submittingAfterLocation) return;
+          if (!consent.checked) return;
+          if (latInput.value && lngInput.value) return;
+
+          event.preventDefault();
+          setStatus(consentStatus, 'Capturando ubicación antes de enviar...', 'is-info');
+          requestClientLocation(
+            function () {
+              submittingAfterLocation = true;
+              form.submit();
+            },
+            function (message) {
+              setStatus(consentStatus, message, 'is-warning');
+            }
+          );
+        });
+      })();
+    </script>
+    <% } %>
+  </body>
+</html>

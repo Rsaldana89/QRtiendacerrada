@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aviso de privacidad</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="public-page brand-public-page">
+    <main class="public-shell privacy-shell">
+      <section class="public-card branded-public-card">
+        <div class="brand-header public-brand-header branded-main-header">
+          <div class="brand-logo-box">
+            <img src="/img/logo-chc.jpg" alt="Hermanos Coronel Cremería" class="logo-img" />
+          </div>
+          <div class="brand-copy brand-copy-on-dark">
+            <strong>Atención a sucursales</strong>
+            <span>Privacidad y ubicación</span>
+          </div>
+        </div>
+        <div class="gold-rule"></div>
+        <div class="public-content branded-public-content privacy-content">
+          <h1 class="public-title">Aviso de privacidad</h1>
+          <p class="public-subtitle">Uso de información en el reporte de tienda cerrada.</p>
+
+          <div class="privacy-text-card">
+            <h2>Información solicitada</h2>
+            <p>Este formulario solicita únicamente la sucursal que el usuario encontró cerrada. No solicita nombre, teléfono ni correo electrónico.</p>
+
+            <h2>Uso de ubicación</h2>
+            <p>La ubicación del dispositivo puede usarse de dos formas: para sugerir la sucursal cercana y, sólo si el usuario marca la casilla correspondiente, para adjuntar la ubicación al reporte con fines informativos.</p>
+
+            <h2>Finalidad</h2>
+            <p>La información se utiliza para revisar reportes de operación de sucursales y dar seguimiento interno a los avisos recibidos.</p>
+
+            <h2>Responsable</h2>
+            <p>Cremería Hermanos Coronel es responsable del uso de la información registrada en este sistema.</p>
+          </div>
+
+          <div class="form-card">
+            <a href="/reporte" class="btn btn-primary">Volver al formulario</a>
+          </div>
+
+          <footer class="public-footer-links single-line">
+            <button type="button" class="footer-link-button" id="openAboutModal">Acerca de</button>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-backdrop" id="aboutModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+        <button type="button" class="modal-close" id="closeAboutModal" aria-label="Cerrar">×</button>
+        <h2 id="aboutTitle">Acerca de</h2>
+        <p>Sistema desarrollado por Rubén Saldaña para Cremería Hermanos Coronel · 2026.</p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById('aboutModal');
+        const open = document.getElementById('openAboutModal');
+        const close = document.getElementById('closeAboutModal');
+        function openModal() { modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false'); }
+        function closeModal() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); }
+        open.addEventListener('click', openModal);
+        close.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (event) { if (event.target === modal) closeModal(); });
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeModal(); });
+      })();
+    </script>
+  </body>
+</html>

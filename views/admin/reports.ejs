@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Listado de reportes</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'reportes' }) %>
+
+    <main class="container admin-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Consulta</div>
+          <h1>Reportes registrados</h1>
+          <p>Ordenados del más reciente al más antiguo. Usa los filtros para revisar por fecha, rango o sucursal.</p>
+        </div>
+        <a href="/admin" class="btn btn-light">Volver al dashboard</a>
+      </section>
+
+      <form method="get" action="/admin/reportes" class="filter-form">
+        <div class="filters-row">
+          <div class="filter-item">
+            <label for="fecha">Fecha específica</label>
+            <input type="date" id="fecha" name="fecha" value="<%= filters.fecha || '' %>" />
+          </div>
+          <div class="filter-item">
+            <label for="mes">Mes</label>
+            <input type="month" id="mes" name="mes" value="<%= filters.mes || '' %>" />
+          </div>
+          <div class="filter-item">
+            <label for="fecha_inicio">Desde</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" value="<%= filters.fecha_inicio || '' %>" />
+          </div>
+          <div class="filter-item">
+            <label for="fecha_fin">Hasta</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" value="<%= filters.fecha_fin || '' %>" />
+          </div>
+          <div class="filter-item">
+            <label for="sucursal_id">Sucursal</label>
+            <select id="sucursal_id" name="sucursal_id">
+              <option value="">Todas</option>
+              <% sucursales.forEach(function(s) { %>
+                <option value="<%= s.id %>" <%= filters.sucursal_id == s.id ? 'selected' : '' %>><%= s.nombre %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+          <a href="/admin/reportes" class="btn btn-light">Limpiar</a>
+          <a href="/admin/reportes/exportar?fecha=<%= filters.fecha || '' %>&mes=<%= filters.mes || '' %>&fecha_inicio=<%= filters.fecha_inicio || '' %>&fecha_fin=<%= filters.fecha_fin || '' %>&sucursal_id=<%= filters.sucursal_id || '' %>" class="btn btn-secondary">Exportar CSV</a>
+        </div>
+      </form>
+
+      <section class="table-card">
+        <div class="table-top">
+          <h2>Detalle de reportes</h2>
+          <span><%= reports.length %> resultado(s)</span>
+        </div>
+        <div class="table-responsive">
+          <table class="reports-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Sucursal</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Fecha y hora completa</th>
+                <th>Ubicación de envío</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% reports.forEach(function(r) { %>
+                <tr>
+                  <td><span class="badge-id"><%= r.id %></span></td>
+                  <td><strong><%= r.sucursal %></strong></td>
+                  <td><%= r.fecha %></td>
+                  <td><%= r.hora %></td>
+                  <td><%= r.fecha_hora %></td>
+                  <td>
+                    <% if (r.cliente_maps_url) { %>
+                      <a href="<%= r.cliente_maps_url %>" target="_blank" rel="noopener" class="map-link">Ver mapa</a>
+                      <% if (r.cliente_precision_m) { %>
+                        <span class="table-subtext">Precisión: <%= Math.round(r.cliente_precision_m) %> m</span>
+                      <% } %>
+                    <% } else if (Number(r.cliente_ubicacion_consentimiento) === 1) { %>
+                      <span class="status-badge muted">No capturada</span>
+                    <% } else { %>
+                      <span class="status-badge muted">No autorizada</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+              <% if (reports.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="no-data">No hay reportes para los filtros seleccionados.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

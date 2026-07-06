@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= mode === 'create' ? 'Nueva sucursal' : 'Editar sucursal' %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'sucursales' }) %>
+
+    <main class="container admin-main narrow-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Sucursales</div>
+          <h1><%= mode === 'create' ? 'Nueva sucursal' : 'Editar sucursal' %></h1>
+          <p>Captura los datos de la sucursal. La ubicación es opcional.</p>
+        </div>
+        <a href="/admin/sucursales" class="btn btn-light">Volver al listado</a>
+      </section>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <section class="panel-card">
+        <form action="<%= mode === 'create' ? '/admin/sucursales' : '/admin/sucursales/' + sucursal.id %>" method="post" class="admin-form">
+          <div class="form-grid two-cols">
+            <div>
+              <label for="nombre">Nombre de sucursal *</label>
+              <input id="nombre" name="nombre" required value="<%= sucursal.nombre || '' %>" />
+            </div>
+            <div>
+              <label for="branch_number">Número / Branch</label>
+              <input id="branch_number" name="branch_number" type="number" value="<%= sucursal.branch_number || '' %>" />
+            </div>
+            <div>
+              <label for="usuario_soporte360">Usuario Soporte360</label>
+              <input id="usuario_soporte360" name="usuario_soporte360" value="<%= sucursal.usuario_soporte360 || '' %>" />
+            </div>
+            <div>
+              <label for="municipio">Municipio</label>
+              <input id="municipio" name="municipio" value="<%= sucursal.municipio || '' %>" />
+            </div>
+            <div>
+              <label for="nombre_referencia_ubicacion">Nombre referencia ubicación</label>
+              <input id="nombre_referencia_ubicacion" name="nombre_referencia_ubicacion" value="<%= sucursal.nombre_referencia_ubicacion || '' %>" />
+            </div>
+            <div>
+              <label for="maps_url">URL Google Maps</label>
+              <input id="maps_url" name="maps_url" value="<%= sucursal.maps_url || '' %>" />
+            </div>
+            <div>
+              <label for="latitud">Latitud</label>
+              <input id="latitud" name="latitud" type="number" step="any" value="<%= sucursal.latitud || '' %>" />
+            </div>
+            <div>
+              <label for="longitud">Longitud</label>
+              <input id="longitud" name="longitud" type="number" step="any" value="<%= sucursal.longitud || '' %>" />
+            </div>
+          </div>
+
+
+
+          <section class="location-preview-card" id="locationPreviewCard">
+            <div class="location-preview-head">
+              <div>
+                <strong>Vista previa de ubicación</strong>
+                <small>Verifica que las coordenadas apunten a la sucursal correcta.</small>
+              </div>
+              <a id="coordsMapLink" class="btn btn-light btn-mini" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a>
+            </div>
+            <div id="coordsMapEmpty" class="map-empty">Captura latitud y longitud para previsualizar el punto.</div>
+            <iframe id="coordsMapFrame" class="map-frame" title="Vista previa Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </section>
+
+          <div class="switch-group">
+            <label class="switch-row" for="ubicacion_activa">
+              <span>
+                <strong>Ubicación activa</strong>
+                <small>Usar esta sucursal para sugerencia automática por GPS.</small>
+              </span>
+              <input type="checkbox" id="ubicacion_activa" name="ubicacion_activa" value="1" <%= Number(sucursal.ubicacion_activa) === 1 ? 'checked' : '' %> />
+            </label>
+            <label class="switch-row" for="activa">
+              <span>
+                <strong>Sucursal activa</strong>
+                <small>Mostrarla en el formulario público.</small>
+              </span>
+              <input type="checkbox" id="activa" name="activa" value="1" <%= sucursal.activa === undefined || Number(sucursal.activa) === 1 ? 'checked' : '' %> />
+            </label>
+          </div>
+
+          <div class="btn-row form-actions-end">
+            <button type="submit" class="btn btn-primary btn-fit">Guardar sucursal</button>
+            <a href="/admin/sucursales" class="btn btn-light">Cancelar</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  
+
+    <script>
+      (function () {
+        const latInput = document.getElementById('latitud');
+        const lngInput = document.getElementById('longitud');
+        const mapLink = document.getElementById('coordsMapLink');
+        const mapFrame = document.getElementById('coordsMapFrame');
+        const mapEmpty = document.getElementById('coordsMapEmpty');
+        const mapsUrlInput = document.getElementById('maps_url');
+
+        function isValidCoord(lat, lng) {
+          return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+        }
+
+        function updatePreview() {
+          const lat = Number(latInput.value);
+          const lng = Number(lngInput.value);
+
+          if (isValidCoord(lat, lng)) {
+            const url = 'https://www.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng);
+            const embedUrl = 'https://maps.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng) + '&z=17&output=embed';
+            mapLink.href = url;
+            mapLink.classList.remove('disabled-link');
+            mapFrame.src = embedUrl;
+            mapFrame.style.display = 'block';
+            mapEmpty.style.display = 'none';
+          } else {
+            mapLink.removeAttribute('href');
+            mapLink.classList.add('disabled-link');
+            mapFrame.removeAttribute('src');
+            mapFrame.style.display = 'none';
+            mapEmpty.style.display = 'block';
+          }
+        }
+
+        if (mapsUrlInput) {
+          mapsUrlInput.addEventListener('blur', function () {
+            const value = mapsUrlInput.value.trim();
+            if (value && !/^https?:\/\//i.test(value)) {
+              mapsUrlInput.value = 'https://' + value;
+            }
+          });
+        }
+
+        latInput.addEventListener('input', updatePreview);
+        lngInput.addEventListener('input', updatePreview);
+        updatePreview();
+      })();
+    </script>
+  </body>
+</html>

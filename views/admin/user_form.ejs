@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'usuarios' }) %>
+
+    <main class="container admin-main narrow-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Usuarios</div>
+          <h1><%= mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' %></h1>
+          <p><%= mode === 'create' ? 'Crea una nueva cuenta para acceder al panel.' : 'Modifica datos o cambia la contraseña del usuario.' %></p>
+        </div>
+        <a href="/admin/usuarios" class="btn btn-light">Volver al listado</a>
+      </section>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <section class="panel-card">
+        <form action="<%= mode === 'create' ? '/admin/usuarios' : '/admin/usuarios/' + usuario.id %>" method="post" class="admin-form">
+          <div class="form-grid two-cols">
+            <div>
+              <label for="nombre">Nombre *</label>
+              <input id="nombre" name="nombre" required value="<%= usuario.nombre || '' %>" />
+            </div>
+            <div>
+              <label for="username">Usuario *</label>
+              <input id="username" name="username" required value="<%= usuario.username || '' %>" />
+            </div>
+            <div>
+              <label for="password"><%= mode === 'create' ? 'Contraseña *' : 'Nueva contraseña' %></label>
+              <input id="password" name="password" type="password" <%= mode === 'create' ? 'required' : '' %> autocomplete="new-password" />
+              <% if (mode === 'edit') { %>
+                <p class="help-text">Déjala vacía para conservar la contraseña actual.</p>
+              <% } %>
+            </div>
+            <div>
+              <label for="rol">Rol</label>
+              <input id="rol" name="rol" value="manager" disabled />
+              <p class="help-text">Por ahora el sistema usa sólo rol manager.</p>
+            </div>
+          </div>
+
+          <div class="switch-group">
+            <label class="switch-row" for="activo">
+              <span>
+                <strong>Usuario activo</strong>
+                <small>Permite iniciar sesión en el panel.</small>
+              </span>
+              <input type="checkbox" id="activo" name="activo" value="1" <%= usuario.activo === undefined || Number(usuario.activo) === 1 ? 'checked' : '' %> />
+            </label>
+          </div>
+
+          <div class="btn-row form-actions-end">
+            <button type="submit" class="btn btn-primary btn-fit">Guardar usuario</button>
+            <a href="/admin/usuarios" class="btn btn-light">Cancelar</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

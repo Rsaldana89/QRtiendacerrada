@@ -1,0 +1,27 @@
+{
+  "name": "qr-report-app",
+  "version": "1.0.0",
+  "description": "Mini sistema para reportar tiendas cerradas mediante código QR",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "db:init": "node scripts/init_db.js",
+    "db:seed": "node scripts/seed_data.js",
+    "import:sucursales": "node scripts/import_sucursales.js",
+    "import:ubicaciones": "node scripts/import_ubicaciones.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.8",
+    "exceljs": "^4.3.0",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mysql2": "^3.2.4",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

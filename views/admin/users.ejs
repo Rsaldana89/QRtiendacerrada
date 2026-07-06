@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administrar usuarios</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="admin-page">
+    <%- include('../partials/admin_header', { user, activeNav: 'usuarios' }) %>
+
+    <main class="container admin-main">
+      <section class="page-head">
+        <div>
+          <div class="section-label">Seguridad</div>
+          <h1>Usuarios</h1>
+          <p>Administra quién puede entrar al panel privado. Todos los usuarios usan rol manager.</p>
+        </div>
+        <div class="btn-row">
+          <a href="/admin/usuarios/nuevo" class="btn btn-secondary">Nuevo usuario</a>
+          <a href="/admin" class="btn btn-light">Volver</a>
+        </div>
+      </section>
+
+      <% if (filters && filters.error === 'self') { %>
+        <div class="alert alert-error">No puedes desactivar tu propio usuario mientras estás en sesión.</div>
+      <% } %>
+
+      <form method="get" action="/admin/usuarios" class="filter-form">
+        <div class="filters-row three-cols">
+          <div>
+            <label for="q">Buscar</label>
+            <input id="q" name="q" value="<%= filters.q || '' %>" placeholder="Nombre o usuario" />
+          </div>
+          <div>
+            <label for="activo">Estatus</label>
+            <select id="activo" name="activo">
+              <option value="">Todos</option>
+              <option value="1" <%= filters.activo === '1' ? 'selected' : '' %>>Activos</option>
+              <option value="0" <%= filters.activo === '0' ? 'selected' : '' %>>Inactivos</option>
+            </select>
+          </div>
+          <div class="filter-actions align-end">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="/admin/usuarios" class="btn btn-light">Limpiar</a>
+          </div>
+        </div>
+      </form>
+
+      <section class="table-card">
+        <div class="table-top">
+          <h2>Listado de usuarios</h2>
+          <span><%= usuarios.length %> registros</span>
+        </div>
+        <div class="table-responsive">
+          <table class="reports-table admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% usuarios.forEach(function(u) { %>
+                <tr>
+                  <td><span class="badge-id"><%= u.id %></span></td>
+                  <td><strong><%= u.nombre %></strong></td>
+                  <td><%= u.username %></td>
+                  <td><span class="status-badge muted"><%= u.rol %></span></td>
+                  <td>
+                    <% if (u.activo) { %>
+                      <span class="status-badge ok">Activo</span>
+                    <% } else { %>
+                      <span class="status-badge off">Inactivo</span>
+                    <% } %>
+                  </td>
+                  <td class="actions-cell">
+                    <a href="/admin/usuarios/<%= u.id %>/editar" class="btn btn-mini btn-light">Editar</a>
+                    <% if (u.id !== user.id) { %>
+                      <form action="/admin/usuarios/<%= u.id %>/toggle" method="post" class="inline-form">
+                        <button type="submit" class="btn btn-mini btn-secondary"><%= u.activo ? 'Desactivar' : 'Activar' %></button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+              <% if (!usuarios.length) { %>
+                <tr><td colspan="6" class="no-data">No se encontraron usuarios.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
