@@ -1397,3 +1397,73 @@ select:focus {
   background: #fbfaf7;
   border-color: #ded3ca;
 }
+
+/* Campo de contraseña con un solo botón de visualización */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  width: 34px;
+  height: 34px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6f625d;
+  cursor: pointer;
+  padding: 7px;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: #f2ece7;
+  color: var(--chc-burgundy);
+  outline: none;
+}
+
+.password-toggle svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* Evita el fondo azul intenso del autocompletado del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #2d2724;
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  box-shadow: 0 0 0 1000px #fff inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
+@media (max-width: 640px) {
+  .password-toggle {
+    width: 40px;
+    height: 40px;
+    right: 6px;
+  }
+
+  .password-field input {
+    padding-right: 52px;
+  }
+}

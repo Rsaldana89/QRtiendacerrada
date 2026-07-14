@@ -343,3 +343,13 @@ scripts/migration_add_ubicacion_reportes.sql
 Cuando el cliente marca la casilla **Recolectar mi ubicación para fines informativos del reporte**, el sistema guarda latitud, longitud, precisión aproximada y fecha/hora de captura. En el panel `/admin/reportes` aparece un enlace **Ver mapa** para abrir el punto en Google Maps.
 
 En el formulario de alta/edición de sucursal, al capturar latitud y longitud se muestra una vista previa en mapa y un botón para abrir las coordenadas en Google Maps.
+
+## Interfaz administrativa móvil 2026
+
+La interfaz del panel fue optimizada para celular y escritorio:
+
+- Navegación inferior fija en móvil.
+- Reportes, usuarios y sucursales en tarjetas legibles desde celular.
+- Filtros plegables para ahorrar espacio.
+- Dashboard compacto con accesos directos.
+- Botón de ojo para mostrar u ocultar contraseñas en login y alta/edición de usuarios.

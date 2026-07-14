@@ -14,9 +14,8 @@
         <div>
           <div class="section-label">Usuarios</div>
           <h1><%= mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' %></h1>
-          <p><%= mode === 'create' ? 'Crea una nueva cuenta para acceder al panel.' : 'Modifica datos o cambia la contraseña del usuario.' %></p>
         </div>
-        <a href="/admin/usuarios" class="btn btn-light">Volver al listado</a>
+        <a href="/admin/usuarios" class="btn btn-light">Volver</a>
       </section>
 
       <% if (error) { %>
@@ -32,28 +31,32 @@
             </div>
             <div>
               <label for="username">Usuario *</label>
-              <input id="username" name="username" required value="<%= usuario.username || '' %>" />
+              <input id="username" name="username" required value="<%= usuario.username || '' %>" autocomplete="username" />
             </div>
             <div>
               <label for="password"><%= mode === 'create' ? 'Contraseña *' : 'Nueva contraseña' %></label>
-              <input id="password" name="password" type="password" <%= mode === 'create' ? 'required' : '' %> autocomplete="new-password" />
+              <div class="password-field">
+                <input id="password" name="password" type="password" <%= mode === 'create' ? 'required' : '' %> autocomplete="new-password" />
+                <button type="button" class="password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 12s3.4-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.4 5.5-9.5 5.5S2.5 12 2.5 12Z"></path>
+                    <circle cx="12" cy="12" r="2.8"></circle>
+                  </svg>
+                </button>
+              </div>
               <% if (mode === 'edit') { %>
-                <p class="help-text">Déjala vacía para conservar la contraseña actual.</p>
+                <p class="help-text">Déjala vacía para conservar la actual.</p>
               <% } %>
             </div>
             <div>
               <label for="rol">Rol</label>
               <input id="rol" name="rol" value="manager" disabled />
-              <p class="help-text">Por ahora el sistema usa sólo rol manager.</p>
             </div>
           </div>
 
           <div class="switch-group">
             <label class="switch-row" for="activo">
-              <span>
-                <strong>Usuario activo</strong>
-                <small>Permite iniciar sesión en el panel.</small>
-              </span>
+              <span><strong>Usuario activo</strong></span>
               <input type="checkbox" id="activo" name="activo" value="1" <%= usuario.activo === undefined || Number(usuario.activo) === 1 ? 'checked' : '' %> />
             </label>
           </div>
@@ -65,5 +68,6 @@
         </form>
       </section>
     </main>
+    <script src="/js/password-toggle.js"></script>
   </body>
 </html>
