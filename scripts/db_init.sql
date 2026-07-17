@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 CREATE TABLE IF NOT EXISTS `reportes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `sucursal_id` INT NOT NULL,
+  `tipo_reporte` VARCHAR(40) NOT NULL DEFAULT 'tienda_cerrada',
   `fecha_hora` DATETIME NOT NULL,
   `cliente_latitud` DOUBLE NULL,
   `cliente_longitud` DOUBLE NULL,
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `reportes` (
   `cliente_ubicacion_consentimiento` TINYINT(1) NOT NULL DEFAULT 0,
   `cliente_ubicacion_capturada_at` DATETIME NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_reportes_tipo_fecha` (`tipo_reporte`, `fecha_hora`),
   CONSTRAINT `fk_reportes_sucursal` FOREIGN KEY (`sucursal_id`) REFERENCES `sucursales`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

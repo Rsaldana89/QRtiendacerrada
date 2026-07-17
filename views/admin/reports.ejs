@@ -14,13 +14,22 @@
         <div>
           <div class="section-label">Consulta</div>
           <h1>Reportes registrados</h1>
-          <p>Ordenados del más reciente al más antiguo. Usa los filtros para revisar por fecha, rango o sucursal.</p>
+          <p>Filtra por tipo, fecha o sucursal.</p>
         </div>
-        <a href="/admin" class="btn btn-light">Volver al dashboard</a>
+        <a href="/admin" class="btn btn-light">Volver</a>
       </section>
 
       <form method="get" action="/admin/reportes" class="filter-form">
-        <div class="filters-row">
+        <div class="filters-row reports-filter-grid">
+          <div class="filter-item">
+            <label for="tipo_reporte">Tipo de reporte</label>
+            <select id="tipo_reporte" name="tipo_reporte">
+              <option value="">Todos</option>
+              <% Object.entries(reportTypes).forEach(function(entry) { %>
+                <option value="<%= entry[0] %>" <%= filters.tipo_reporte === entry[0] ? 'selected' : '' %>><%= entry[1] %></option>
+              <% }); %>
+            </select>
+          </div>
           <div class="filter-item">
             <label for="fecha">Fecha específica</label>
             <input type="date" id="fecha" name="fecha" value="<%= filters.fecha || '' %>" />
@@ -50,7 +59,7 @@
         <div class="filter-actions">
           <button type="submit" class="btn btn-primary">Aplicar filtros</button>
           <a href="/admin/reportes" class="btn btn-light">Limpiar</a>
-          <a href="/admin/reportes/exportar?fecha=<%= filters.fecha || '' %>&mes=<%= filters.mes || '' %>&fecha_inicio=<%= filters.fecha_inicio || '' %>&fecha_fin=<%= filters.fecha_fin || '' %>&sucursal_id=<%= filters.sucursal_id || '' %>" class="btn btn-secondary">Exportar CSV</a>
+          <a href="/admin/reportes/exportar?tipo_reporte=<%= filters.tipo_reporte || '' %>&fecha=<%= filters.fecha || '' %>&mes=<%= filters.mes || '' %>&fecha_inicio=<%= filters.fecha_inicio || '' %>&fecha_fin=<%= filters.fecha_fin || '' %>&sucursal_id=<%= filters.sucursal_id || '' %>" class="btn btn-secondary">Exportar CSV</a>
         </div>
       </form>
 
@@ -60,26 +69,30 @@
           <span><%= reports.length %> resultado(s)</span>
         </div>
         <div class="table-responsive">
-          <table class="reports-table">
+          <table class="reports-table reports-with-type">
             <thead>
               <tr>
                 <th>ID</th>
+                <th>Tipo</th>
                 <th>Sucursal</th>
                 <th>Fecha</th>
                 <th>Hora</th>
-                <th>Fecha y hora completa</th>
                 <th>Ubicación de envío</th>
               </tr>
             </thead>
             <tbody>
               <% reports.forEach(function(r) { %>
                 <tr>
-                  <td><span class="badge-id"><%= r.id %></span></td>
-                  <td><strong><%= r.sucursal %></strong></td>
-                  <td><%= r.fecha %></td>
-                  <td><%= r.hora %></td>
-                  <td><%= r.fecha_hora %></td>
-                  <td>
+                  <td data-label="ID"><span class="badge-id"><%= r.id %></span></td>
+                  <td data-label="Tipo">
+                    <span class="report-type-badge <%= r.tipo_reporte === 'servicio_negado' ? 'service' : 'closed' %>">
+                      <%= reportTypes[r.tipo_reporte] || r.tipo_reporte %>
+                    </span>
+                  </td>
+                  <td data-label="Sucursal"><strong><%= r.sucursal %></strong></td>
+                  <td data-label="Fecha"><%= r.fecha %></td>
+                  <td data-label="Hora"><%= r.hora %></td>
+                  <td data-label="Ubicación">
                     <% if (r.cliente_maps_url) { %>
                       <a href="<%= r.cliente_maps_url %>" target="_blank" rel="noopener" class="map-link">Ver mapa</a>
                       <% if (r.cliente_precision_m) { %>

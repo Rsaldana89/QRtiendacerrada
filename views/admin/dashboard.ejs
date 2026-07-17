@@ -12,17 +12,23 @@
     <main class="container admin-main">
       <section class="page-head">
         <div>
-          <div class="section-label">Panel administrativo</div>
+          <div class="section-label">Panel privado</div>
           <h1>Resumen de reportes</h1>
-          <p>Actividad registrada desde el formulario de tiendas cerradas.</p>
+          <p>Consulta la actividad registrada desde el formulario público.</p>
         </div>
         <div class="btn-row">
           <a href="/admin/reportes" class="btn btn-secondary">Ver reportes</a>
           <a href="/admin/sucursales" class="btn btn-light">Sucursales</a>
-          <a href="/admin/usuarios" class="btn btn-light">Usuarios</a>
-          <a href="/admin/configuracion" class="btn btn-light">Configuración</a>
+          <% if (user.rol === 'manager') { %>
+            <a href="/admin/usuarios" class="btn btn-light">Usuarios</a>
+            <a href="/admin/configuracion" class="btn btn-light">Configuración</a>
+          <% } %>
         </div>
       </section>
+
+      <% if (permissionError) { %>
+        <div class="alert alert-error">Tu rol no tiene permiso para entrar a esa sección.</div>
+      <% } %>
 
       <section class="card-grid">
         <article class="metric-card">
@@ -40,16 +46,28 @@
       </section>
 
       <section class="panel-card">
-        <h2>Acciones rápidas</h2>
-        <p>Revisa el detalle de cada reporte, filtra por sucursal o por rango de fechas y exporta la información a CSV.</p>
-        <p class="status-note">Ubicaciones en formulario público: <strong><%= usarUbicaciones ? 'activadas' : 'desactivadas' %></strong></p>
-        <div class="btn-row">
-          <a href="/admin/reportes" class="btn btn-primary">Ver listado de reportes</a>
-          <a href="/admin/sucursales" class="btn btn-secondary">Administrar sucursales</a>
-          <a href="/admin/usuarios" class="btn btn-light">Administrar usuarios</a>
-          <a href="/admin/configuracion" class="btn btn-light">Configurar formulario</a>
+        <div class="report-type-summary">
+          <div>
+            <span>Tienda cerrada</span>
+            <strong><%= counts.tiendaCerrada %></strong>
+          </div>
+          <div>
+            <span>Servicio negado</span>
+            <strong><%= counts.servicioNegado %></strong>
+          </div>
+        </div>
+        <div class="btn-row dashboard-actions">
+          <a href="/admin/reportes" class="btn btn-primary">Consultar reportes</a>
+          <a href="/admin/sucursales" class="btn btn-light"><%= user.rol === 'manager' ? 'Administrar sucursales' : 'Ver sucursales' %></a>
+          <% if (user.rol === 'manager') { %>
+            <a href="/admin/usuarios" class="btn btn-light">Administrar usuarios</a>
+            <a href="/admin/configuracion" class="btn btn-light">Configurar formulario</a>
+          <% } %>
           <a href="/reporte" class="btn btn-light">Ver formulario público</a>
         </div>
+        <% if (user.rol === 'manager') { %>
+          <p class="status-note">Ubicaciones en formulario público: <strong><%= usarUbicaciones ? 'activadas' : 'desactivadas' %></strong></p>
+        <% } %>
       </section>
     </main>
   </body>

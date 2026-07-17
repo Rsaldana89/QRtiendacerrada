@@ -12,9 +12,9 @@
     <main class="container admin-main">
       <section class="page-head">
         <div>
-          <div class="section-label">Seguridad</div>
+          <div class="section-label">Accesos</div>
           <h1>Usuarios</h1>
-          <p>Administra quién puede entrar al panel privado. Todos los usuarios usan rol manager.</p>
+          <p>Asigna permisos de manager o usuario de consulta.</p>
         </div>
         <div class="btn-row">
           <a href="/admin/usuarios/nuevo" class="btn btn-secondary">Nuevo usuario</a>
@@ -27,10 +27,18 @@
       <% } %>
 
       <form method="get" action="/admin/usuarios" class="filter-form">
-        <div class="filters-row three-cols">
+        <div class="filters-row reports-filter-grid">
           <div>
             <label for="q">Buscar</label>
             <input id="q" name="q" value="<%= filters.q || '' %>" placeholder="Nombre o usuario" />
+          </div>
+          <div>
+            <label for="rol">Rol</label>
+            <select id="rol" name="rol">
+              <option value="">Todos</option>
+              <option value="manager" <%= filters.rol === 'manager' ? 'selected' : '' %>>Manager</option>
+              <option value="usuario" <%= filters.rol === 'usuario' ? 'selected' : '' %>>Usuario</option>
+            </select>
           </div>
           <div>
             <label for="activo">Estatus</label>
@@ -40,10 +48,10 @@
               <option value="0" <%= filters.activo === '0' ? 'selected' : '' %>>Inactivos</option>
             </select>
           </div>
-          <div class="filter-actions align-end">
-            <button type="submit" class="btn btn-secondary">Filtrar</button>
-            <a href="/admin/usuarios" class="btn btn-light">Limpiar</a>
-          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-secondary">Filtrar</button>
+          <a href="/admin/usuarios" class="btn btn-light">Limpiar</a>
         </div>
       </form>
 
@@ -70,7 +78,11 @@
                   <td><span class="badge-id"><%= u.id %></span></td>
                   <td><strong><%= u.nombre %></strong></td>
                   <td><%= u.username %></td>
-                  <td><span class="status-badge muted"><%= u.rol %></span></td>
+                  <td>
+                    <span class="role-badge <%= u.rol === 'manager' ? 'manager' : 'viewer' %>">
+                      <%= u.rol === 'manager' ? 'Manager' : 'Usuario' %>
+                    </span>
+                  </td>
                   <td>
                     <% if (u.activo) { %>
                       <span class="status-badge ok">Activo</span>

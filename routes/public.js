@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+const REPORT_TYPES = {
+  tienda_cerrada: 'Encontré cerrada la tienda',
+  servicio_negado: 'Me negaron un servicio'
+};
+
 // Redirigir raíz al formulario de reporte
 router.get('/', (req, res) => {
   return res.redirect('/reporte');
@@ -30,7 +35,7 @@ router.get('/reporte', async (req, res) => {
       `SELECT valor FROM configuracion_sistema WHERE clave = 'usar_ubicaciones' LIMIT 1`
     );
     const usarUbicaciones = settingsRows.length ? settingsRows[0].valor === '1' : false;
-    res.render('report_form', { sucursales, usarUbicaciones });
+    res.render('report_form', { sucursales, usarUbicaciones, reportTypes: REPORT_TYPES });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error al cargar las sucursales');
@@ -39,7 +44,10 @@ router.get('/reporte', async (req, res) => {
 
 // Procesar envío de reporte
 router.post('/reporte', async (req, res) => {
-  const { sucursal_id } = req.body;
+  const { sucursal_id, tipo_reporte } = req.body;
+  if (!REPORT_TYPES[tipo_reporte]) {
+    return res.status(400).send('Debe seleccionar un tipo de reporte válido');
+  }
   if (!sucursal_id) {
     return res.status(400).send('Debe seleccionar una sucursal');
   }
@@ -51,7 +59,6 @@ router.post('/reporte', async (req, res) => {
   const guardarUbicacion = consentimientoUbicacion && validLatLng(clienteLatitud, clienteLongitud);
 
   try {
-    // Verificar que la sucursal exista y esté activa
     const [rows] = await pool.query(
       'SELECT id FROM sucursales WHERE id = ? AND activa = 1',
       [sucursal_id]
@@ -60,13 +67,13 @@ router.post('/reporte', async (req, res) => {
       return res.status(400).send('Sucursal no válida');
     }
 
-    // Registrar reporte con fecha y hora actuales, y ubicación del cliente solo si dio consentimiento y se capturó correctamente.
     await pool.query(
       `INSERT INTO reportes
-       (sucursal_id, fecha_hora, cliente_latitud, cliente_longitud, cliente_precision_m, cliente_ubicacion_consentimiento, cliente_ubicacion_capturada_at)
-       VALUES (?, NOW(), ?, ?, ?, ?, ?)`,
+       (sucursal_id, tipo_reporte, fecha_hora, cliente_latitud, cliente_longitud, cliente_precision_m, cliente_ubicacion_consentimiento, cliente_ubicacion_capturada_at)
+       VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)`,
       [
         sucursal_id,
+        tipo_reporte,
         guardarUbicacion ? clienteLatitud : null,
         guardarUbicacion ? clienteLongitud : null,
         guardarUbicacion ? clientePrecision : null,
@@ -74,19 +81,21 @@ router.post('/reporte', async (req, res) => {
         guardarUbicacion ? new Date() : null
       ]
     );
-    return res.redirect('/gracias');
+    return res.redirect(`/gracias?tipo=${encodeURIComponent(tipo_reporte)}`);
   } catch (err) {
     console.error(err);
     res.status(500).send('Error al guardar el reporte');
   }
 });
 
-// Página de agradecimiento
 router.get('/gracias', (req, res) => {
-  res.render('thanks');
+  const tipo = REPORT_TYPES[req.query.tipo] ? req.query.tipo : null;
+  res.render('thanks', {
+    tipoReporte: tipo,
+    tipoReporteLabel: tipo ? REPORT_TYPES[tipo] : null
+  });
 });
 
-// Aviso de privacidad simplificado para explicar el uso opcional de ubicación.
 router.get('/privacidad', (req, res) => {
   res.render('privacidad');
 });

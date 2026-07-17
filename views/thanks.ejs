@@ -23,6 +23,9 @@
           <div class="success-box brand-success-box">✓</div>
           <h1 class="public-title">Aviso registrado</h1>
           <p class="public-subtitle">Gracias. El reporte fue guardado correctamente.</p>
+          <% if (tipoReporteLabel) { %>
+            <div class="submitted-type"><span>Tipo de reporte</span><strong><%= tipoReporteLabel %></strong></div>
+          <% } %>
           <div class="form-card">
             <a href="/reporte" class="btn btn-primary">Registrar otro reporte</a>
           </div>

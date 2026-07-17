@@ -3,8 +3,8 @@
     <div class="nav-brand">
       <img src="/img/logo-chc.jpg" alt="Hermanos Coronel Cremería" />
       <div class="nav-brand-text">
-        <strong>Tiendas cerradas</strong>
-        <span>Panel de reportes QR</span>
+        <strong>Reportes de sucursales</strong>
+        <span>Panel de consulta</span>
       </div>
     </div>
     <div class="nav-actions">
@@ -12,8 +12,10 @@
         <a href="/admin" class="<%= activeNav === 'dashboard' ? 'active' : '' %>">Inicio</a>
         <a href="/admin/reportes" class="<%= activeNav === 'reportes' ? 'active' : '' %>">Reportes</a>
         <a href="/admin/sucursales" class="<%= activeNav === 'sucursales' ? 'active' : '' %>">Sucursales</a>
-        <a href="/admin/usuarios" class="<%= activeNav === 'usuarios' ? 'active' : '' %>">Usuarios</a>
-        <a href="/admin/configuracion" class="<%= activeNav === 'configuracion' ? 'active' : '' %>">Configuración</a>
+        <% if (user.rol === 'manager') { %>
+          <a href="/admin/usuarios" class="<%= activeNav === 'usuarios' ? 'active' : '' %>">Usuarios</a>
+          <a href="/admin/configuracion" class="<%= activeNav === 'configuracion' ? 'active' : '' %>">Configuración</a>
+        <% } %>
       </div>
       <span class="user-pill">Hola, <%= user.nombre %></span>
       <form action="/logout" method="post" class="logout-form">

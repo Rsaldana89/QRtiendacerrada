@@ -1,7 +1,7 @@
 {
   "name": "qr-report-app",
   "version": "1.0.0",
-  "description": "Mini sistema para reportar tiendas cerradas mediante código QR",
+  "description": "Sistema QR para reportes de sucursales",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

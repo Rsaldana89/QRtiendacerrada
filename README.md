@@ -1,6 +1,6 @@
-# Sistema de reporte de tiendas cerradas
+# Sistema QR de reportes de sucursales
 
-Este proyecto es una aplicación web mínima desarrollada con **Node.js**, **Express.js**, **MySQL** y **EJS** para permitir que los clientes reporten que una tienda está cerrada mediante un código QR y que los administradores puedan consultar dichos reportes a través de un panel privado.
+Este proyecto es una aplicación web mínima desarrollada con **Node.js**, **Express.js**, **MySQL** y **EJS** para permitir que los clientes registren reportes de tienda cerrada o servicio negado mediante un código QR y que los administradores puedan consultar dichos reportes a través de un panel privado.
 
 ## Características principales
 
@@ -353,3 +353,39 @@ La interfaz del panel fue optimizada para celular y escritorio:
 - Filtros plegables para ahorrar espacio.
 - Dashboard compacto con accesos directos.
 - Botón de ojo para mostrar u ocultar contraseñas en login y alta/edición de usuarios.
+
+## Zona horaria en Railway
+
+La aplicación configura cada conexión MySQL con horario UTC-06:00, correspondiente a Querétaro y al centro de México. En Railway agrega estas variables al servicio web:
+
+```env
+DB_TIMEZONE=-06:00
+TZ=America/Mexico_City
+```
+
+Después realiza un nuevo despliegue. Los reportes nuevos se guardarán y mostrarán con la hora local. Para corregir registros creados antes de este ajuste, revisa `scripts/corregir_zona_horaria_railway.sql` y actualiza únicamente los IDs afectados.
+
+## Actualización: tipos de reporte y roles
+
+El formulario público permite seleccionar uno de estos tipos:
+
+* `tienda_cerrada`: **Encontré cerrada la tienda**.
+* `servicio_negado`: **Me negaron un servicio**.
+
+El panel de reportes muestra el tipo, permite filtrarlo y lo incluye en la exportación CSV.
+
+### Roles disponibles
+
+* **manager**: consulta y exporta reportes; administra sucursales, usuarios y configuración.
+* **usuario**: consulta y exporta todos los reportes; puede ver sucursales y descargar el QR, pero no puede crear ni editar sucursales, administrar usuarios o abrir configuración.
+
+Los roles se asignan desde `/admin/usuarios` al crear o editar un usuario.
+
+### Migración de bases existentes
+
+Antes de iniciar esta versión, ejecuta el archivo correspondiente en MySQL Workbench:
+
+* Railway: `scripts/migration_tipos_reportes_roles_railway.sql`
+* Local: `scripts/migration_tipos_reportes_roles_local.sql`
+
+La migración agrega `reportes.tipo_reporte`, conserva los reportes existentes como `tienda_cerrada` y prepara el filtro por tipo. Los archivos desactivan temporalmente `SQL_SAFE_UPDATES` durante la migración y lo vuelven a activar al terminar.

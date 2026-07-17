@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reporte de tienda cerrada</title>
+    <title>Registrar reporte</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body class="public-page brand-public-page">
@@ -21,10 +21,29 @@
         <div class="gold-rule"></div>
 
         <div class="public-content branded-public-content">
-          <h1 class="public-title">Reporte de tienda cerrada</h1>
-          <p class="public-subtitle">Selecciona la sucursal que encontraste cerrada.</p>
+          <h1 class="public-title">Registrar reporte</h1>
+          <p class="public-subtitle">Selecciona el tipo de reporte y la sucursal.</p>
 
           <form action="/reporte" method="post" class="form-card" id="reportForm">
+            <fieldset class="report-type-fieldset">
+              <legend>¿Qué deseas reportar?</legend>
+              <div class="report-type-grid">
+                <label class="report-type-option">
+                  <input type="radio" name="tipo_reporte" value="tienda_cerrada" required />
+                  <span class="report-type-card">
+                    <span class="report-type-mark" aria-hidden="true">×</span>
+                    <strong><%= reportTypes.tienda_cerrada %></strong>
+                  </span>
+                </label>
+                <label class="report-type-option">
+                  <input type="radio" name="tipo_reporte" value="servicio_negado" required />
+                  <span class="report-type-card">
+                    <span class="report-type-mark" aria-hidden="true">!</span>
+                    <strong><%= reportTypes.servicio_negado %></strong>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
             <% if (usarUbicaciones) { %>
               <div class="location-suggest-box brand-location-box">
                 <button type="button" id="btnDetectLocation" class="btn btn-location">

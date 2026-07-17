@@ -49,8 +49,12 @@
               <% } %>
             </div>
             <div>
-              <label for="rol">Rol</label>
-              <input id="rol" name="rol" value="manager" disabled />
+              <label for="rol">Rol *</label>
+              <select id="rol" name="rol" required>
+                <option value="manager" <%= usuario.rol === 'manager' ? 'selected' : '' %>>Manager</option>
+                <option value="usuario" <%= usuario.rol === 'usuario' || !usuario.rol ? 'selected' : '' %>>Usuario</option>
+              </select>
+              <p class="field-help">Manager administra. Usuario consulta reportes y sucursales.</p>
             </div>
           </div>
 

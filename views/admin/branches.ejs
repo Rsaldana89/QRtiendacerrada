@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Administrar sucursales</title>
+    <title>Sucursales</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body class="admin-page">
@@ -14,27 +14,27 @@
         <div>
           <div class="section-label">Catálogo</div>
           <h1>Sucursales</h1>
-          <p>Administra las tiendas disponibles en el formulario público y sus datos opcionales de ubicación.</p>
+          <p><%= canEdit ? 'Administra las sucursales y sus datos de ubicación.' : 'Consulta las sucursales registradas.' %></p>
         </div>
         <div class="btn-row">
-          <a href="/admin/sucursales/nueva" class="btn btn-secondary">Nueva sucursal</a>
+          <% if (canEdit) { %>
+            <a href="/admin/sucursales/nueva" class="btn btn-secondary">Nueva sucursal</a>
+          <% } %>
           <a href="/admin" class="btn btn-light">Volver</a>
         </div>
       </section>
 
       <section class="panel-card qr-panel">
         <div class="qr-copy">
-          <h2>QR general para cartel</h2>
-          <p>Este QR apunta a:</p>
+          <h2>QR general</h2>
           <code><%= qrUrl %></code>
-          <p class="help-text">Puedes descargarlo e imprimirlo para colocarlo en tienda.</p>
           <div class="btn-row">
             <a href="/admin/sucursales/qr.png?download=1" class="btn btn-primary btn-fit">Descargar QR</a>
-            <a href="<%= qrUrl %>" target="_blank" class="btn btn-light">Abrir URL</a>
+            <a href="<%= qrUrl %>" target="_blank" rel="noopener" class="btn btn-light">Abrir URL</a>
           </div>
         </div>
         <div class="qr-box">
-          <img src="/admin/sucursales/qr.png" alt="Código QR de tienda cerrada" />
+          <img src="/admin/sucursales/qr.png" alt="Código QR de reportes" />
         </div>
       </section>
 
@@ -89,24 +89,19 @@
                 <th>Municipio</th>
                 <th>Ubicación</th>
                 <th>Estatus</th>
-                <th>Acciones</th>
+                <% if (canEdit) { %><th>Acciones</th><% } %>
               </tr>
             </thead>
             <tbody>
               <% sucursales.forEach(function(s) { %>
                 <tr>
                   <td><span class="badge-id"><%= s.id %></span></td>
-                  <td>
-                    <strong><%= s.nombre %></strong>
-                    <% if (s.nombre_referencia_ubicacion && s.nombre_referencia_ubicacion !== s.nombre) { %>
-                      <small class="table-subtext">Ref: <%= s.nombre_referencia_ubicacion %></small>
-                    <% } %>
-                  </td>
+                  <td><strong><%= s.nombre %></strong></td>
                   <td><%= s.usuario_soporte360 || '-' %></td>
                   <td><%= s.municipio || '-' %></td>
                   <td>
-                    <% if (s.ubicacion_activa) { %>
-                      <span class="status-badge ok">Activa</span>
+                    <% if (s.ubicacion_activa && s.latitud && s.longitud) { %>
+                      <a class="map-link" target="_blank" rel="noopener" href="https://www.google.com/maps?q=<%= s.latitud %>,<%= s.longitud %>">Ver mapa</a>
                     <% } else { %>
                       <span class="status-badge muted">Sin GPS</span>
                     <% } %>
@@ -118,16 +113,18 @@
                       <span class="status-badge off">Inactiva</span>
                     <% } %>
                   </td>
-                  <td class="actions-cell">
-                    <a href="/admin/sucursales/<%= s.id %>/editar" class="btn btn-mini btn-light">Editar</a>
-                    <form action="/admin/sucursales/<%= s.id %>/toggle" method="post" class="inline-form">
-                      <button type="submit" class="btn btn-mini btn-secondary"><%= s.activa ? 'Desactivar' : 'Activar' %></button>
-                    </form>
-                  </td>
+                  <% if (canEdit) { %>
+                    <td class="actions-cell">
+                      <a href="/admin/sucursales/<%= s.id %>/editar" class="btn btn-mini btn-light">Editar</a>
+                      <form action="/admin/sucursales/<%= s.id %>/toggle" method="post" class="inline-form">
+                        <button type="submit" class="btn btn-mini btn-secondary"><%= s.activa ? 'Desactivar' : 'Activar' %></button>
+                      </form>
+                    </td>
+                  <% } %>
                 </tr>
               <% }); %>
               <% if (!sucursales.length) { %>
-                <tr><td colspan="7" class="no-data">No se encontraron sucursales.</td></tr>
+                <tr><td colspan="<%= canEdit ? 7 : 6 %>" class="no-data">No se encontraron sucursales.</td></tr>
               <% } %>
             </tbody>
           </table>
