@@ -8,7 +8,6 @@
   </head>
   <body class="admin-page">
     <%- include('../partials/admin_header', { user, activeNav: 'dashboard' }) %>
-
     <main class="container admin-main">
       <section class="page-head">
         <div>
@@ -25,11 +24,9 @@
           <% } %>
         </div>
       </section>
-
       <% if (permissionError) { %>
         <div class="alert alert-error">Tu rol no tiene permiso para entrar a esa sección.</div>
       <% } %>
-
       <section class="card-grid">
         <article class="metric-card">
           <span class="label">Reportes de hoy</span>
@@ -44,7 +41,6 @@
           <span class="number"><%= counts.month %></span>
         </article>
       </section>
-
       <section class="panel-card">
         <div class="report-type-summary">
           <div>

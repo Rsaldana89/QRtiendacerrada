@@ -7,7 +7,6 @@ const REPORT_TYPES = {
   servicio_negado: 'Me negaron un servicio'
 };
 
-// Redirigir raíz al formulario de reporte
 router.get('/', (req, res) => {
   return res.redirect('/reporte');
 });
@@ -22,7 +21,15 @@ function validLatLng(lat, lng) {
   return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
-// Mostrar formulario de reporte con listado de sucursales activas
+function normalizeServiceDetail(value) {
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
+}
+
+function serviceDetailLength(value) {
+  return Array.from(value).length;
+}
+
 router.get('/reporte', async (req, res) => {
   try {
     const [sucursales] = await pool.query(
@@ -42,14 +49,24 @@ router.get('/reporte', async (req, res) => {
   }
 });
 
-// Procesar envío de reporte
 router.post('/reporte', async (req, res) => {
   const { sucursal_id, tipo_reporte } = req.body;
+
   if (!REPORT_TYPES[tipo_reporte]) {
     return res.status(400).send('Debe seleccionar un tipo de reporte válido');
   }
   if (!sucursal_id) {
     return res.status(400).send('Debe seleccionar una sucursal');
+  }
+
+  let detalleServicioNegado = null;
+  if (tipo_reporte === 'servicio_negado') {
+    const detalle = normalizeServiceDetail(req.body.detalle_servicio_negado);
+    const length = serviceDetailLength(detalle);
+    if (length < 5 || length > 200) {
+      return res.status(400).send('El detalle del servicio negado debe tener entre 5 y 200 caracteres.');
+    }
+    detalleServicioNegado = detalle;
   }
 
   const consentimientoUbicacion = req.body.consentimiento_ubicacion === '1' ? 1 : 0;
@@ -69,11 +86,12 @@ router.post('/reporte', async (req, res) => {
 
     await pool.query(
       `INSERT INTO reportes
-       (sucursal_id, tipo_reporte, fecha_hora, cliente_latitud, cliente_longitud, cliente_precision_m, cliente_ubicacion_consentimiento, cliente_ubicacion_capturada_at)
-       VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)`,
+       (sucursal_id, tipo_reporte, detalle_servicio_negado, fecha_hora, cliente_latitud, cliente_longitud, cliente_precision_m, cliente_ubicacion_consentimiento, cliente_ubicacion_capturada_at)
+       VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)`,
       [
         sucursal_id,
         tipo_reporte,
+        detalleServicioNegado,
         guardarUbicacion ? clienteLatitud : null,
         guardarUbicacion ? clienteLongitud : null,
         guardarUbicacion ? clientePrecision : null,
@@ -81,6 +99,7 @@ router.post('/reporte', async (req, res) => {
         guardarUbicacion ? new Date() : null
       ]
     );
+
     return res.redirect(`/gracias?tipo=${encodeURIComponent(tipo_reporte)}`);
   } catch (err) {
     console.error(err);

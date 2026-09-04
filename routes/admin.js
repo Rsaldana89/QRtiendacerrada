@@ -10,6 +10,7 @@ const REPORT_TYPES = {
 
 const USER_ROLES = ['manager', 'usuario'];
 
+// Middleware para proteger rutas privadas
 router.use((req, res, next) => {
   if (!req.session.user) {
     return res.redirect('/login');
@@ -35,6 +36,7 @@ async function getUsarUbicaciones() {
   return rows.length ? rows[0].valor === '1' : false;
 }
 
+// Dashboard principal
 router.get('/', async (req, res) => {
   try {
     const [todayRows] = await pool.query(
@@ -52,7 +54,6 @@ router.get('/', async (req, res) => {
          SUM(CASE WHEN tipo_reporte = 'servicio_negado' THEN 1 ELSE 0 END) AS servicio_negado
        FROM reportes`
     );
-
     const counts = {
       today: todayRows[0].count,
       week: weekRows[0].count,
@@ -73,6 +74,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Pantalla de configuracion
 router.get('/configuracion', requireManager, async (req, res) => {
   try {
     const usarUbicaciones = await getUsarUbicaciones();
@@ -83,31 +85,32 @@ router.get('/configuracion', requireManager, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error al cargar la configuración');
+    res.status(500).send('Error al cargar la configuracion');
   }
 });
 
+// Guardar configuracion
 router.post('/configuracion', requireManager, async (req, res) => {
   try {
     const usarUbicaciones = req.body.usar_ubicaciones === '1' ? '1' : '0';
     await pool.query(
       `INSERT INTO configuracion_sistema (clave, valor, descripcion)
-       VALUES ('usar_ubicaciones', ?, 'Muestra u oculta el botón para sugerir sucursal con GPS en el formulario público')
+       VALUES ('usar_ubicaciones', ?, 'Muestra u oculta el boton para sugerir sucursal con GPS en el formulario publico')
        ON DUPLICATE KEY UPDATE valor = VALUES(valor), descripcion = VALUES(descripcion)`,
       [usarUbicaciones]
     );
     res.redirect('/admin/configuracion?saved=1');
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error al guardar la configuración');
+    res.status(500).send('Error al guardar la configuracion');
   }
 });
 
+// Listado y filtros de reportes
 function buildReportFilters(query) {
   const { fecha, mes, sucursal_id, fecha_inicio, fecha_fin, tipo_reporte } = query;
   const conditions = [];
   const params = [];
-
   if (fecha) {
     conditions.push('DATE(r.fecha_hora) = ?');
     params.push(fecha);
@@ -128,7 +131,6 @@ function buildReportFilters(query) {
     conditions.push('r.tipo_reporte = ?');
     params.push(tipo_reporte);
   }
-
   return {
     where: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
     params,
@@ -139,7 +141,7 @@ function buildReportFilters(query) {
 router.get('/reportes', async (req, res) => {
   try {
     const filterData = buildReportFilters(req.query);
-    const query = `SELECT r.id, r.sucursal_id, r.tipo_reporte, s.nombre AS sucursal,
+    const query = `SELECT r.id, r.sucursal_id, r.tipo_reporte, r.detalle_servicio_negado, s.nombre AS sucursal,
                           DATE_FORMAT(r.fecha_hora, '%d/%m/%Y') AS fecha,
                           TIME_FORMAT(r.fecha_hora, '%H:%i:%s') AS hora,
                           DATE_FORMAT(r.fecha_hora, '%d/%m/%Y %H:%i:%s') AS fecha_hora,
@@ -174,7 +176,7 @@ router.get('/reportes', async (req, res) => {
 router.get('/reportes/exportar', async (req, res) => {
   try {
     const filterData = buildReportFilters(req.query);
-    const query = `SELECT r.id, r.tipo_reporte, s.nombre AS sucursal,
+    const query = `SELECT r.id, r.tipo_reporte, r.detalle_servicio_negado, s.nombre AS sucursal,
                           DATE_FORMAT(r.fecha_hora, '%Y-%m-%d %H:%i:%s') AS fecha_hora,
                           r.cliente_ubicacion_consentimiento, r.cliente_latitud,
                           r.cliente_longitud, r.cliente_precision_m,
@@ -192,12 +194,12 @@ router.get('/reportes/exportar', async (req, res) => {
       const str = String(value ?? '');
       return `"${str.replace(/"/g, '""')}"`;
     };
-
-    let csv = 'ID,TipoReporte,Sucursal,FechaHora,ConsentimientoUbicacion,Latitud,Longitud,PrecisionMetros,GoogleMaps\n';
+    let csv = 'ID,TipoReporte,DetalleServicioNegado,Sucursal,FechaHora,ConsentimientoUbicacion,Latitud,Longitud,PrecisionMetros,GoogleMaps\n';
     rows.forEach((row) => {
       csv += [
         row.id,
         REPORT_TYPES[row.tipo_reporte] || row.tipo_reporte,
+        row.detalle_servicio_negado || '',
         row.sucursal,
         row.fecha_hora,
         row.cliente_ubicacion_consentimiento ? 'Sí' : 'No',
@@ -216,6 +218,8 @@ router.get('/reportes/exportar', async (req, res) => {
   }
 });
 
+
+// QR general para cartel de reporte
 router.get('/sucursales/qr.png', async (req, res) => {
   try {
     const QRCode = require('qrcode');
@@ -224,12 +228,15 @@ router.get('/sucursales/qr.png', async (req, res) => {
       type: 'png',
       width: 900,
       margin: 2,
-      color: { dark: '#65171e', light: '#ffffff' }
+      color: {
+        dark: '#65171e',
+        light: '#ffffff'
+      }
     });
     const download = req.query.download === '1';
     res.setHeader('Content-Type', 'image/png');
     if (download) {
-      res.setHeader('Content-Disposition', 'attachment; filename="qr-reportes-coronel.png"');
+      res.setHeader('Content-Disposition', 'attachment; filename="qr-tienda-cerrada-coronel.png"');
     } else {
       res.setHeader('Cache-Control', 'no-store');
     }
@@ -240,6 +247,7 @@ router.get('/sucursales/qr.png', async (req, res) => {
   }
 });
 
+// Panel de sucursales
 router.get('/sucursales', async (req, res) => {
   try {
     const { q, activa } = req.query;
@@ -251,25 +259,26 @@ router.get('/sucursales', async (req, res) => {
       const like = `%${q}%`;
       params.push(like, like, like, like);
     }
+
     if (activa === '1' || activa === '0') {
       conditions.push('activa = ?');
       params.push(activa);
     }
 
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
     const [sucursales] = await pool.query(
-      `SELECT id, branch_number, nombre, usuario_soporte360, nombre_referencia_ubicacion,
-              municipio, maps_url, latitud, longitud, ubicacion_activa, activa
+      `SELECT id, branch_number, nombre, usuario_soporte360, nombre_referencia_ubicacion, municipio, maps_url, latitud, longitud, ubicacion_activa, activa
        FROM sucursales
        ${where}
-       ORDER BY branch_number IS NULL, branch_number ASC, nombre ASC`,
+       ORDER BY id ASC`,
       params
     );
 
     const [statsRows] = await pool.query(
-      `SELECT COUNT(*) AS total,
-              SUM(CASE WHEN activa = 1 THEN 1 ELSE 0 END) AS activas,
-              SUM(CASE WHEN ubicacion_activa = 1 THEN 1 ELSE 0 END) AS con_ubicacion
+      `SELECT
+         COUNT(*) AS total,
+         SUM(CASE WHEN activa = 1 THEN 1 ELSE 0 END) AS activas,
+         SUM(CASE WHEN ubicacion_activa = 1 THEN 1 ELSE 0 END) AS con_ubicacion
        FROM sucursales`
     );
 
@@ -278,7 +287,6 @@ router.get('/sucursales', async (req, res) => {
       sucursales,
       stats: statsRows[0],
       filters: { q, activa },
-      canEdit: req.session.user.rol === 'manager',
       qrUrl: 'https://tiendacerradaqr.up.railway.app/'
     });
   } catch (err) {
@@ -312,8 +320,18 @@ router.post('/sucursales', requireManager, async (req, res) => {
       `INSERT INTO sucursales
        (branch_number, nombre, usuario_soporte360, nombre_referencia_ubicacion, municipio, maps_url, latitud, longitud, ubicacion_activa, activa)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [data.branch_number, data.nombre, data.usuario_soporte360, data.nombre_referencia_ubicacion,
-       data.municipio, data.maps_url, data.latitud, data.longitud, data.ubicacion_activa, data.activa]
+      [
+        data.branch_number,
+        data.nombre,
+        data.usuario_soporte360,
+        data.nombre_referencia_ubicacion,
+        data.municipio,
+        data.maps_url,
+        data.latitud,
+        data.longitud,
+        data.ubicacion_activa,
+        data.activa
+      ]
     );
     res.redirect('/admin/sucursales?saved=1');
   } catch (err) {
@@ -358,12 +376,21 @@ router.post('/sucursales/:id', requireManager, async (req, res) => {
 
     await pool.query(
       `UPDATE sucursales
-       SET branch_number = ?, nombre = ?, usuario_soporte360 = ?, nombre_referencia_ubicacion = ?,
-           municipio = ?, maps_url = ?, latitud = ?, longitud = ?, ubicacion_activa = ?, activa = ?
+       SET branch_number = ?, nombre = ?, usuario_soporte360 = ?, nombre_referencia_ubicacion = ?, municipio = ?, maps_url = ?, latitud = ?, longitud = ?, ubicacion_activa = ?, activa = ?
        WHERE id = ?`,
-      [data.branch_number, data.nombre, data.usuario_soporte360, data.nombre_referencia_ubicacion,
-       data.municipio, data.maps_url, data.latitud, data.longitud, data.ubicacion_activa,
-       data.activa, req.params.id]
+      [
+        data.branch_number,
+        data.nombre,
+        data.usuario_soporte360,
+        data.nombre_referencia_ubicacion,
+        data.municipio,
+        data.maps_url,
+        data.latitud,
+        data.longitud,
+        data.ubicacion_activa,
+        data.activa,
+        req.params.id
+      ]
     );
     res.redirect('/admin/sucursales?saved=1');
   } catch (err) {
@@ -388,25 +415,22 @@ router.post('/sucursales/:id/toggle', requireManager, async (req, res) => {
   }
 });
 
+// Panel de usuarios
 router.get('/usuarios', requireManager, async (req, res) => {
   try {
-    const { q, activo, rol } = req.query;
+    const { q, activo } = req.query;
     const conditions = [];
     const params = [];
     if (q) {
-      conditions.push('(nombre LIKE ? OR username LIKE ?)');
+      conditions.push('(nombre LIKE ? OR username LIKE ? OR rol LIKE ?)');
       const like = `%${q}%`;
-      params.push(like, like);
+      params.push(like, like, like);
     }
     if (activo === '1' || activo === '0') {
       conditions.push('activo = ?');
       params.push(activo);
     }
-    if (USER_ROLES.includes(rol)) {
-      conditions.push('rol = ?');
-      params.push(rol);
-    }
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
     const [usuarios] = await pool.query(
       `SELECT id, nombre, username, rol, activo, created_at, updated_at
        FROM usuarios
@@ -417,7 +441,7 @@ router.get('/usuarios', requireManager, async (req, res) => {
     res.render('admin/users', {
       user: req.session.user,
       usuarios,
-      filters: { q, activo, rol, error: req.query.error }
+      filters: { q, activo, error: req.query.error }
     });
   } catch (err) {
     console.error(err);
@@ -444,7 +468,7 @@ router.post('/usuarios', requireManager, async (req, res) => {
         user: req.session.user,
         mode: 'create',
         usuario: req.body,
-        error: 'Nombre, usuario, contraseña y rol son obligatorios.'
+        error: 'Nombre, usuario y contraseña son obligatorios.'
       });
     }
 
@@ -467,10 +491,7 @@ router.post('/usuarios', requireManager, async (req, res) => {
 
 router.get('/usuarios/:id/editar', requireManager, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id, nombre, username, rol, activo FROM usuarios WHERE id = ?',
-      [req.params.id]
-    );
+    const [rows] = await pool.query('SELECT id, nombre, username, rol, activo FROM usuarios WHERE id = ?', [req.params.id]);
     if (!rows.length) return res.status(404).send('Usuario no encontrado');
     res.render('admin/user_form', {
       user: req.session.user,
@@ -489,27 +510,13 @@ router.post('/usuarios/:id', requireManager, async (req, res) => {
     const { nombre, username, password } = req.body;
     const rol = normalizeRole(req.body.rol);
     const activo = req.body.activo === '1' ? 1 : 0;
-    const editingSelf = Number(req.params.id) === Number(req.session.user.id);
-
     if (!nombre || !username || !rol) {
       req.body.id = req.params.id;
       return res.render('admin/user_form', {
         user: req.session.user,
         mode: 'edit',
         usuario: req.body,
-        error: 'Nombre, usuario y rol son obligatorios.'
-      });
-    }
-
-    if (editingSelf && (rol !== 'manager' || activo !== 1)) {
-      req.body.id = req.params.id;
-      req.body.activo = 1;
-      req.body.rol = 'manager';
-      return res.render('admin/user_form', {
-        user: req.session.user,
-        mode: 'edit',
-        usuario: req.body,
-        error: 'No puedes quitarte el rol manager ni desactivar tu propia cuenta durante la sesión.'
+        error: 'Nombre y usuario son obligatorios.'
       });
     }
 
@@ -526,7 +533,7 @@ router.post('/usuarios/:id', requireManager, async (req, res) => {
       );
     }
 
-    if (editingSelf) {
+    if (Number(req.params.id) === Number(req.session.user.id)) {
       req.session.user.nombre = nombre.trim();
       req.session.user.username = username.trim();
       req.session.user.rol = rol;
@@ -579,7 +586,7 @@ function normalizeSucursalBody(body) {
     latitud: numberOrNull(body.latitud),
     longitud: numberOrNull(body.longitud),
     ubicacion_activa: body.ubicacion_activa === '1' ? 1 : 0,
-    activa: body.activa === '1' ? 1 : 0
+    activa: body.activa === '0' ? 0 : 1
   };
 }
 

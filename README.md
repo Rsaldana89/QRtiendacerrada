@@ -1,6 +1,6 @@
-# Sistema QR de reportes de sucursales
+# Sistema de reporte de tiendas cerradas
 
-Este proyecto es una aplicación web mínima desarrollada con **Node.js**, **Express.js**, **MySQL** y **EJS** para permitir que los clientes registren reportes de tienda cerrada o servicio negado mediante un código QR y que los administradores puedan consultar dichos reportes a través de un panel privado.
+Este proyecto es una aplicación web mínima desarrollada con **Node.js**, **Express.js**, **MySQL** y **EJS** para permitir que los clientes reporten que una tienda está cerrada mediante un código QR y que los administradores puedan consultar dichos reportes a través de un panel privado.
 
 ## Características principales
 
@@ -365,27 +365,21 @@ TZ=America/Mexico_City
 
 Después realiza un nuevo despliegue. Los reportes nuevos se guardarán y mostrarán con la hora local. Para corregir registros creados antes de este ajuste, revisa `scripts/corregir_zona_horaria_railway.sql` y actualiza únicamente los IDs afectados.
 
-## Actualización: tipos de reporte y roles
+## Detalle de servicio negado
 
-El formulario público permite seleccionar uno de estos tipos:
+Cuando el cliente selecciona **Me negaron un servicio**, el formulario solicita **¿Cuál fue el servicio negado?**.
 
-* `tienda_cerrada`: **Encontré cerrada la tienda**.
-* `servicio_negado`: **Me negaron un servicio**.
+- El detalle es obligatorio únicamente para este tipo de reporte.
+- Debe contener entre 5 y 200 caracteres.
+- Para **Encontré cerrada la tienda** no se solicita el detalle.
+- El backend vuelve a validar el rango de 5 a 200 caracteres antes de guardar.
+- La columna `detalle_servicio_negado` acepta `NULL`, por lo que los reportes históricos siguen siendo válidos.
+- En el panel administrativo el detalle se muestra en la lista y también se incluye en la exportación CSV.
 
-El panel de reportes muestra el tipo, permite filtrarlo y lo incluye en la exportación CSV.
+Antes de desplegar esta versión sobre una base existente, ejecutar:
 
-### Roles disponibles
+```sql
+scripts/migration_detalle_servicio_negado_railway.sql
+```
 
-* **manager**: consulta y exporta reportes; administra sucursales, usuarios y configuración.
-* **usuario**: consulta y exporta todos los reportes; puede ver sucursales y descargar el QR, pero no puede crear ni editar sucursales, administrar usuarios o abrir configuración.
-
-Los roles se asignan desde `/admin/usuarios` al crear o editar un usuario.
-
-### Migración de bases existentes
-
-Antes de iniciar esta versión, ejecuta el archivo correspondiente en MySQL Workbench:
-
-* Railway: `scripts/migration_tipos_reportes_roles_railway.sql`
-* Local: `scripts/migration_tipos_reportes_roles_local.sql`
-
-La migración agrega `reportes.tipo_reporte`, conserva los reportes existentes como `tienda_cerrada` y prepara el filtro por tipo. Los archivos desactivan temporalmente `SQL_SAFE_UPDATES` durante la migración y lo vuelven a activar al terminar.
+En Railway la migración está preparada para el esquema `railway`. Si se ejecuta localmente, cambia `USE railway;` por el nombre de la base local, por ejemplo `USE qr_tienda_cerrada;`.

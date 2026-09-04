@@ -1748,3 +1748,88 @@ input:-webkit-autofill:focus {
     grid-template-columns: 88px minmax(0, 1fr);
   }
 }
+
+/* Detalle obligatorio cuando el reporte es por servicio negado */
+.service-detail-box {
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid var(--chc-border);
+  border-radius: 12px;
+  background: #fbfaf7;
+}
+
+.service-detail-box[hidden] {
+  display: none !important;
+}
+
+.service-detail-box label {
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 104px;
+  resize: vertical;
+  border: 1px solid var(--chc-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--chc-text);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  padding: 12px 13px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+textarea:focus {
+  border-color: var(--chc-burgundy);
+  box-shadow: 0 0 0 3px rgba(125, 32, 40, .08);
+}
+
+.service-detail-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  color: var(--chc-muted);
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.service-detail-count {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.report-detail-text {
+  display: block;
+  max-width: 360px;
+  color: var(--chc-text);
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.reports-with-detail {
+  min-width: 980px;
+}
+
+@media (max-width: 760px) {
+  .service-detail-box {
+    padding: 12px;
+  }
+
+  textarea {
+    min-height: 112px;
+    font-size: .98rem;
+  }
+
+  .service-detail-meta {
+    align-items: flex-start;
+  }
+
+  .reports-with-detail {
+    min-width: 0;
+  }
+}

@@ -44,6 +44,22 @@
                 </label>
               </div>
             </fieldset>
+
+            <div class="service-detail-box" id="serviceDetailBox" hidden>
+              <label for="detalle_servicio_negado">¿Cuál fue el servicio negado?</label>
+              <textarea
+                id="detalle_servicio_negado"
+                name="detalle_servicio_negado"
+                minlength="5"
+                maxlength="200"
+                rows="4"
+                placeholder="Describe brevemente qué servicio te negaron."
+              ></textarea>
+              <div class="service-detail-meta">
+                <span>Mínimo 5 caracteres.</span>
+                <span class="service-detail-count"><span id="serviceDetailCount">0</span>/200</span>
+              </div>
+            </div>
             <% if (usarUbicaciones) { %>
               <div class="location-suggest-box brand-location-box">
                 <button type="button" id="btnDetectLocation" class="btn btn-location">
@@ -105,6 +121,36 @@
         <p>Sistema desarrollado por Rubén Saldaña para Cremería Hermanos Coronel · 2026.</p>
       </div>
     </div>
+
+    <script>
+      (function () {
+        const typeInputs = Array.from(document.querySelectorAll('input[name="tipo_reporte"]'));
+        const detailBox = document.getElementById('serviceDetailBox');
+        const detailInput = document.getElementById('detalle_servicio_negado');
+        const detailCount = document.getElementById('serviceDetailCount');
+
+        function updateDetailVisibility() {
+          const selected = document.querySelector('input[name="tipo_reporte"]:checked');
+          const isServiceDenied = selected && selected.value === 'servicio_negado';
+          detailBox.hidden = !isServiceDenied;
+          detailInput.required = Boolean(isServiceDenied);
+          if (!isServiceDenied) {
+            detailInput.value = '';
+            detailCount.textContent = '0';
+          } else {
+            setTimeout(function () { detailInput.focus(); }, 0);
+          }
+        }
+
+        typeInputs.forEach(function (input) {
+          input.addEventListener('change', updateDetailVisibility);
+        });
+
+        detailInput.addEventListener('input', function () {
+          detailCount.textContent = String(detailInput.value.length);
+        });
+      })();
+    </script>
 
     <script>
       (function () {

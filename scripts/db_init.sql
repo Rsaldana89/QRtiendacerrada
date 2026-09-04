@@ -1,4 +1,4 @@
--- Script de creación de tablas para el sistema de reportes de tiendas cerradas
+-- Script de creación de tablas para el sistema de reportes QR de sucursales
 
 CREATE TABLE IF NOT EXISTS `sucursales` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS `reportes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `sucursal_id` INT NOT NULL,
   `tipo_reporte` VARCHAR(40) NOT NULL DEFAULT 'tienda_cerrada',
+  `detalle_servicio_negado` VARCHAR(200) NULL,
   `fecha_hora` DATETIME NOT NULL,
   `cliente_latitud` DOUBLE NULL,
   `cliente_longitud` DOUBLE NULL,

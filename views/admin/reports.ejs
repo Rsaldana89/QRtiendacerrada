@@ -14,9 +14,9 @@
         <div>
           <div class="section-label">Consulta</div>
           <h1>Reportes registrados</h1>
-          <p>Filtra por tipo, fecha o sucursal.</p>
+          <p>Consulta por tipo, fecha o sucursal.</p>
         </div>
-        <a href="/admin" class="btn btn-light">Volver</a>
+        <a href="/admin" class="btn btn-light">Volver al dashboard</a>
       </section>
 
       <form method="get" action="/admin/reportes" class="filter-form">
@@ -25,8 +25,8 @@
             <label for="tipo_reporte">Tipo de reporte</label>
             <select id="tipo_reporte" name="tipo_reporte">
               <option value="">Todos</option>
-              <% Object.entries(reportTypes).forEach(function(entry) { %>
-                <option value="<%= entry[0] %>" <%= filters.tipo_reporte === entry[0] ? 'selected' : '' %>><%= entry[1] %></option>
+              <% Object.entries(reportTypes).forEach(function([value, label]) { %>
+                <option value="<%= value %>" <%= filters.tipo_reporte === value ? 'selected' : '' %>><%= label %></option>
               <% }); %>
             </select>
           </div>
@@ -69,12 +69,13 @@
           <span><%= reports.length %> resultado(s)</span>
         </div>
         <div class="table-responsive">
-          <table class="reports-table reports-with-type">
+          <table class="reports-table reports-with-type reports-with-detail">
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Tipo</th>
                 <th>Sucursal</th>
+                <th>Detalle</th>
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>Ubicación de envío</th>
@@ -90,6 +91,17 @@
                     </span>
                   </td>
                   <td data-label="Sucursal"><strong><%= r.sucursal %></strong></td>
+                  <td data-label="Detalle">
+                    <% if (r.tipo_reporte === 'servicio_negado') { %>
+                      <% if (r.detalle_servicio_negado) { %>
+                        <span class="report-detail-text"><%= r.detalle_servicio_negado %></span>
+                      <% } else { %>
+                        <span class="status-badge muted">Sin detalle</span>
+                      <% } %>
+                    <% } else { %>
+                      <span class="table-subtext">—</span>
+                    <% } %>
+                  </td>
                   <td data-label="Fecha"><%= r.fecha %></td>
                   <td data-label="Hora"><%= r.hora %></td>
                   <td data-label="Ubicación">
@@ -108,7 +120,7 @@
               <% }); %>
               <% if (reports.length === 0) { %>
                 <tr>
-                  <td colspan="6" class="no-data">No hay reportes para los filtros seleccionados.</td>
+                  <td colspan="7" class="no-data">No hay reportes para los filtros seleccionados.</td>
                 </tr>
               <% } %>
             </tbody>
